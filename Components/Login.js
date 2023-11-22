@@ -2,17 +2,39 @@
 
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Image, StyleSheet } from 'react-native';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 
 const LoginScreen = ({ navigation }) => {
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSignIn = () => {
-    // Validate credentials (you may want to implement real authentication)
-    if (username === 'user' && password === 'password') {
-      navigation.navigate('Home');
-    } else {
-      alert('Invalid credentials. Please try again.');
+  const handleLogin = async () => {
+    try {
+      // Fetch API base URL from .env file
+      const baseUrl = "http://3979-2a09-bac1-36c0-58-00-277-17.ngrok-free.app";
+
+      const response = await axios.post(`${baseUrl}/auth/login`, {
+        email:username,
+        password:password,
+      });
+      console.log(response.data);
+      console.log(response);
+      // Handle the response
+      if (response.status===200) {
+        // Successful login
+        await AsyncStorage.setItem('token', response.data.jwtToken);
+        // Navigate to the next screen or perform other actions
+        navigation.navigate('Home');
+      } else {
+        // Failed login
+        console.error('Login failed');
+        // Handle error, show error message, etc.
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
+      // Handle error, show error message, etc.
     }
   };
 
@@ -30,7 +52,7 @@ const LoginScreen = ({ navigation }) => {
         secureTextEntry={true}
         onChangeText={(text) => setPassword(text)}
       />
-      <Button title="Sign In" onPress={handleSignIn} />
+      <Button title="Sign In" onPress={handleLogin} />
       <Text style={styles.signUpText} onPress={() => navigation.navigate('SignUp')}>
         Don't have an account? Sign Up
       </Text>
